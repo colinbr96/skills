@@ -28,7 +28,7 @@ The user invokes this skill with a GitHub PR link. Use `gh` for all GitHub reads
 
 ### 1. Fetch with gh
 
-Run `gh` via the Shell tool (needs network; use `required_permissions: ["all"]` when auth or git checkout requires it).
+`gh` needs network access and GitHub auth.
 
 ```bash
 gh pr view "$PR" --json number,title,body,baseRefName,headRefName,url,author
