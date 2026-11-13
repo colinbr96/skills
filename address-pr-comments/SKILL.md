@@ -30,16 +30,7 @@ The user invokes this skill with a GitHub PR link. Use `gh` for all GitHub reads
 
 ### 1. Fetch with gh
 
-`gh` needs network access and GitHub auth.
-
-```bash
-gh pr view "$PR" --json number,title,body,baseRefName,headRefName,url,author
-gh pr diff "$PR"
-```
-
-Parse `OWNER`, `REPO`, and `NUMBER` from the URL (`https://github.com/OWNER/REPO/pull/NUMBER`).
-
-Fetch review threads (preferred: includes resolved state), conversation comments, and reviews. Filter with `--jq` so you do not dump raw payloads into context:
+Fetch the PR metadata and diff. For review threads and reviews, use this GraphQL query: it is the only source of each thread's resolved/outdated state, which REST and `gh pr view --json` do not return.
 
 ```bash
 gh api graphql -F owner=OWNER -F name=REPO -F number=NUMBER -f query='
@@ -60,10 +51,9 @@ query($owner:String!, $name:String!, $number:Int!) {
     }
   }
 }'
-
-gh api "repos/OWNER/REPO/issues/NUMBER/comments" --paginate \
-  --jq '.[] | {user: .user.login, body, html_url, created_at}'
 ```
+
+Also fetch top-level conversation comments. Filter API output with `--jq` rather than dumping raw payloads into context.
 
 Skip resolved threads, outdated threads that are already fixed, and pure acknowledgements (`LGTM`, "fixed"). Handle unresolved review threads and top-level conversation comments.
 
